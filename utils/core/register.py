@@ -42,4 +42,4 @@ async def create_sessions():
             "phone_number": phone_number,
             "proxy": proxy
         })
-        logger.success(f'Added a account {me.username} ({me.first_name}) | {me.phone_number}')
+        logger.success(f'Đã thêm tài khoản {me.username} ({me.first_name}) | {me.phone_number}')

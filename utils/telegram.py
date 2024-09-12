@@ -16,7 +16,7 @@ class Accounts:
         accounts_from_json = load_from_json('sessions/accounts.json')
 
         if not accounts_from_json:
-            raise ValueError("Chưa có tài khoản trong phiên/tài khoản.json")
+            raise ValueError("Have not account's in sessions/accounts.json")
 
         available_accounts = []
         for session in sessions:
@@ -33,7 +33,7 @@ class Accounts:
             if file.endswith(".session"):
                 sessions.append(file.replace(".session", ""))
 
-        logger.info(f"Phiên tìm kiếm: {len(sessions)}.")
+        logger.info(f"Searched sessions: {len(sessions)}.")
         return sessions
 
     async def check_valid_account(self, account: dict):
@@ -62,7 +62,7 @@ class Accounts:
             pass
 
     async def check_valid_accounts(self, accounts: list):
-        logger.info(f"Kiểm tra tài khoản hợp lệ...")
+        logger.info(f"Checking accounts for valid...")
 
         tasks = []
         for account in accounts:
@@ -72,7 +72,7 @@ class Accounts:
 
         valid_accounts = [account for account, is_valid in zip(accounts, v_accounts) if is_valid]
         invalid_accounts = [account for account, is_valid in zip(accounts, v_accounts) if not is_valid]
-        logger.success(f"Tài khoản hợp lệ: {len(valid_accounts)}; Không hợp lệ: {len(invalid_accounts)}")
+        logger.success(f"Valid accounts: {len(valid_accounts)}; Invalid: {len(invalid_accounts)}")
 
         return valid_accounts, invalid_accounts
 
@@ -81,17 +81,17 @@ class Accounts:
         available_accounts = self.get_available_accounts(sessions)
 
         if not available_accounts:
-            raise ValueError("Không có sẵn tài khoản!")
+            raise ValueError("Have not available accounts!")
         else:
-            logger.success(f"Tìm kiếm tài khoản có sẵn: {len(available_accounts)}.")
+            logger.success(f"Search available accounts: {len(available_accounts)}.")
 
         valid_accounts, invalid_accounts = await self.check_valid_accounts(available_accounts)
 
         if invalid_accounts:
             save_list_to_file(f"{config.WORKDIR}invalid_accounts.txt", invalid_accounts)
-            logger.info(f"Đã lưu {len(invalid_accounts)} (các) tài khoản không hợp lệ trong {config.WORKDIR}invalid_accounts.txt")
+            logger.info(f"Saved {len(invalid_accounts)} invalid account(s) in {config.WORKDIR}invalid_accounts.txt")
 
         if not valid_accounts:
-            raise ValueError("Không có phiên hợp lệ")
+            raise ValueError("Have not valid sessions")
         else:
             return valid_accounts

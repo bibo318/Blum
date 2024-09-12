@@ -9,7 +9,7 @@ import os
 
 async def main():
     print("Soft's author: https://t.me/debugs0\n")
-    action = int(input("Chọn hành động:\n1. Bắt đầu\n2. Nhận số liệu thống kê\n3. Tạo sessions\n\n> "))
+    action = int(input("Chọn hành động:\n1. Start \n2.Nhận số liệu thống kê\n3. Tạo phiên\n\n> "))
 
     if not os.path.exists('sessions'): os.mkdir('sessions')
 

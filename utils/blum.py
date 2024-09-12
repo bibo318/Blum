@@ -55,7 +55,7 @@ class BlumBot:
             api_hash=config.API_HASH,
             workdir=config.WORKDIR,
             proxy=proxy,
-            lang_code='vn'
+            lang_code='ru'
         )
 
         headers = {'User-Agent': UserAgent(os='android').random}
@@ -74,7 +74,7 @@ class BlumBot:
         if r.get('amountForClaim') is not None and float(r.get('amountForClaim')) and r.get('canClaim'):
             resp = await self.session.post("https://user-domain.blum.codes/api/v1/friends/claim")
             claim_balance = (await resp.json()).get("claimBalance")
-            logger.success(f"Chủ đề {self.thread} | {self.account} | Yêu cầu phần thưởng của bạn bè: {claim_balance}")
+            logger.success(f"Thread {self.thread} | {self.account} | Claim friends reward: {claim_balance}")
 
     async def logout(self):
         await self.session.close()
@@ -121,40 +121,59 @@ class BlumBot:
             await asyncio.sleep(random.uniform(15, 20))
 
         if await self.claim_task(task):
-            logger.success(f"Chủ đề {self.thread} | {self.account} | Nhiệm vụ đã hoàn thành «{task['title']}»")
+            logger.success(f"Chủ đề {self.thread} | {self.account} | Đã hoàn thành nhiệm vụ «{task['title']}»")
         else:
-            logger.error(f"Chủ đề {self.thread} | {self.account} | Nhiệm vụ không thành công «{task['title']}»")
+            logger.error(f"Chủ đề {self.thread} | {self.account} | Nhiệm vụ hoàn thành không thành công «{task['title']}»")
 
     @retry_async()
     async def tasks(self):
-        for task in await self.get_tasks():
-            if task['status'] == 'FINISHED' or task['title'] in config.BLACKLIST_TASK: continue
+        sub_sections = await self.get_tasks()
 
-            if task['kind'] in ['INITIAL', 'ONGOING']:
-                await self.handle_task(task)
+        for sub_section in sub_sections:
+            if sub_section.get('title') in ['Farming', 'Frens']:
+                for task in sub_section.get('tasks'):
+                    if task['title'] in config.BLACKLIST_TASK: continue
 
-            elif task['kind'] == 'QUEST':
-                for subtask in task['subTasks']:
-                    if task['status'] == 'FINISHED' or subtask['title'] in config.BLACKLIST_TASK: continue
-                    if subtask['kind'] == 'INITIAL':
-                        await self.handle_task(subtask)
+                    if task['status'] == 'READY_FOR_CLAIM':
+                        await self.claim_task(task, sub_section)
 
-    async def claim_task(self, task: dict):
+            if sub_section.get('title') in ['Academy', 'Socials']:
+                for task in sub_section.get('tasks'):
+                    if task['title'] in config.BLACKLIST_TASK: continue
+
+                    if task['status'] == 'READY_FOR_CLAIM':
+                        await self.claim_task(task, sub_section)
+
+                    if task['status'] == 'NOT_STARTED':
+                        if await self.start_complete_task(task, sub_section):
+                            await self.claim_task(task, sub_section)
+
+    async def claim_task(self, task: dict, sub_section: dict):
         resp = await self.session.post(f'https://game-domain.blum.codes/api/v1/tasks/{task["id"]}/claim')
-        return (await resp.json()).get('status') == "FINISHED"
+        await asyncio.sleep(random.uniform(*config.DELAYS['TASK_COMPLETE']))
 
-    async def start_complete_task(self, task: dict):
+        if (await resp.json()).get('status') == "FINISHED":
+            logger.success(f"Chủ đề {self.thread} | {self.account} | Đã hoàn thành nhiệm vụ «{task['title']}» trong danh mục «{sub_section['title']}» và nhận được {task['reward']} BP ")
+            return True
+        else:
+            logger.error(f"Chủ đề {self.thread} | {self.account} | Không hoàn thành được nhiệm vụ «{task['title']}» trong danh mục «{sub_section['title']}»")
+            return False
+
+    async def start_complete_task(self, task: dict, sub_section: dict):
         resp = await self.session.post(f'https://game-domain.blum.codes/api/v1/tasks/{task["id"]}/start')
+        await asyncio.sleep(random.uniform(*config.DELAYS['TASK_ACTION']))
+
+        if (await resp.json()).get('status') == "STARTED":
+            logger.info(f"Chủ đề {self.thread} | {self.account} | Bắt đầu hoàn thành nhiệm vụ «{task['title']}» trong danh mục «{sub_section['title']}»")
+            return True
+        else:
+            logger.error(f"Chủ đề {self.thread} | {self.account} | Không hoàn thành được nhiệm vụ «{task['title']}» trong danh mục «{sub_section['title']}»")
+            return False
 
     async def get_tasks(self):
         resp = await self.session.get('https://game-domain.blum.codes/api/v1/tasks')
 
-        tasks = []
-        for task_group in await resp.json():
-            for task in task_group['tasks']:
-                tasks.append(task)
-
-        return tasks
+        return (await resp.json())[0].get('subSections')
 
     async def play_game(self):
         timestamp, start_time, end_time, play_passes = await self.balance()
@@ -169,14 +188,14 @@ class BlumBot:
                 play_passes -= 1
                 continue
 
-            logger.info(f"Chủ đề {self.thread} | {self.account} |Bắt đầu chơi trong trò chơi! Id trò chơi: {game_id}")
+            logger.info(f"Chủ đề {self.thread} | {self.account} | Bắt đầu chơi trong trò chơi! Id trò chơi: {game_id}")
             await asyncio.sleep(random.uniform(*config.DELAYS['GAME']))
 
             msg, points = await self.claim_game(game_id)
             if isinstance(msg, bool) and msg:
                 logger.success(f"Chủ đề {self.thread} | {self.account} | Chơi xong trò chơi!; phần thưởng: {points}")
             else:
-                logger.error(f"Chủ đề {self.thread} | {self.account} | Không thể chơi trò chơi; msg: {msg}")
+                logger.error(f"Chủ đề {self.thread} | {self.account} | Không thể chơi trò chơi; tin nhắn: {msg}")
                 await asyncio.sleep(random.uniform(*config.DELAYS['ERROR_PLAY']))
 
             play_passes -= 1
@@ -185,9 +204,9 @@ class BlumBot:
     async def claim_daily_reward(self):
         resp = await self.session.post("https://game-domain.blum.codes/api/v1/daily-reward?offset=-180")
         if await resp.text() == 'OK':
-            logger.success(f"Chủ đề {self.thread} | {self.account} | Đã nhận phần thưởng hàng ngày!")
+            logger.success(f"Chủ đề {self.thread} | {self.account} | Đã nhận được phần thưởng hàng ngày!")
 
-    async def start_game(self):
+    async def start_game(self) -> [str, bool]:
         resp = await self.session.post("https://game-domain.blum.codes/api/v1/game/play")
         if resp.status == 200:
             return (await resp.json()).get("gameId")

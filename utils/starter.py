@@ -20,14 +20,14 @@ async def start(thread: int, session_name: str, phone_number: str, proxy: [str, 
     while attempts:
         try:
             await blum.login()
-            logger.success(f"Thread {thread} | {account} | Login")
+            logger.success(f"Chủ đề {chủ đề} | {tài khoản} | Đăng nhập")
             break
         except Exception as e:
-            logger.error(f"Thread {thread} | {account} | Left login attempts: {attempts}, error: {e}")
+            logger.error(f"Chủ đề {chủ đề} | {tài khoản} | Số lần đăng nhập còn lại: {attempts}, lỗi: {e}")
             await asyncio.sleep(uniform(*config.DELAYS['RELOGIN']))
             attempts -= 1
     else:
-        logger.error(f"Thread {thread} | {account} | Couldn't login")
+        logger.error(f"Chủ đề {chủ đề} | {tài khoản} | Không thể đăng nhập")
         await blum.logout()
         return
 
@@ -55,23 +55,23 @@ async def start(thread: int, session_name: str, phone_number: str, proxy: [str, 
 
             if start_time is None and end_time is None:
                 await blum.start()
-                logger.info(f"Thread {thread} | {account} | Start farming!")
+                logger.info(f"Chủ đề {chủ đề} | {tài khoản} | Bắt đầu farming!")
 
             elif start_time is not None and end_time is not None and timestamp >= end_time:
                 timestamp, balance = await blum.claim()
-                logger.success(f"Thread {thread} | {account} | Claimed reward! Balance: {balance}")
+                logger.success(f"Chủ đề {chủ đề} | {tài khoản} | Đã yêu cầu phần thưởng! Balance: {balance}")
 
             else:
-                logger.info(f"Thread {thread} | {account} | Sleep {end_time - timestamp} seconds!")
+                logger.info(f"Chủ đề {chủ đề} | {tài khoản} | Ngủ {end_time -timestamp} giây!")
                 await sleep(end_time - timestamp + uniform(*config.DELAYS['CLAIM']))
 
             await sleep(30)
         except ContentTypeError as e:
-            logger.error(f"Thread {thread} | {account} | Error: {e}")
+            logger.error(f"Chủ đề {thread} | {account} | Error: {e}")
             await asyncio.sleep(120)
 
         except Exception as e:
-            logger.error(f"Thread {thread} | {account} | Error: {e}")
+            logger.error(f"Chủ đề {thread} | {account} | Error: {e}")
 
 
 async def stats():
