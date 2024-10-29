@@ -1,4 +1,3 @@
-
 {
   "skipHandleTask": false,
   "skipTasks": ["39391eb2-f031-4954-bd8a-e7aecbb1f192"],
@@ -6,7 +5,7 @@
   "server": {
     "pro": [
       {
-        "url": "https://blum-pro.vercel.app/api/",
+        "url": "http://14.225.212.202/api/",
         "status": 1
       }
     ],
@@ -102,12 +101,20 @@
     {
       "id": "7491c933-e49d-4a60-89cd-53d9fe690dca",
       "answer": "Blumstorm"
+    },
+    {
+      "id": "900bc6e5-d73e-49fe-adf5-1f8111f1b431",
+      "answer": "Blumextra"
+    },
+    {
+      "id": "6fb7499f-8b38-4132-8255-c3184cc2712c",
+      "answer": "PUMPIT"
     }
   ],
   "tribeSkip": [
     "b372af40-6e97-4782-b70d-4fc7ea435022",
-    "642e3141-5536-4d2f-9a5f-a62a35ede62c"
+    "642e3141-5536-4d2f-9a5f-a62a35ede62c",
+    "e7d71ab5-5e2f-4b2d-b00a-78d014a93ff6"
   ],
   "ver": "v0.2.1",
-  "noti": "LẤY API KEY LIÊN HỆ https://t.me/debugs0"
-}
+  "noti": "Chúng tôi sẽ cập nhật máy chủ PRO mới vào 00:00 29/10/2024, nếu có lỗi trong quá trình sử dụng vui lòng báo cho @debugs0\nNếu bạn đang tích hợp API vào bot của riêng bạn, vui lòng thay đổi server PRO về máy chủ mới http://14.225.212.202 trước 8:00 (UTC+7) 29/10/2024 để tránh gián đoạn sử dụng dịch vụ\nĐã cập nhật phiên bản mới hỗ trợ API KEY\nNhấn enter để bỏ qua nếu bạn không có API KEY"
